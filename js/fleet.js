@@ -1,6 +1,3 @@
-// ── CONFIGURATION ──
-const OWM_KEY = "34a053cb6f5ccdfc1337e3141786b9de";
-
 // ── SIMULATED FLEET DATA ──
 const fleetData = [
   {
@@ -136,8 +133,6 @@ document.querySelectorAll(".tab-btn").forEach((btn) => {
       .forEach((p) => p.classList.remove("active"));
     this.classList.add("active");
     document.getElementById(`tab-${this.dataset.tab}`).classList.add("active");
-
-    // Resize maps when tab switches
     setTimeout(() => {
       if (fleetMap) fleetMap.invalidateSize();
     }, 100);
@@ -150,7 +145,6 @@ L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
   attribution: "© OpenStreetMap contributors",
 }).addTo(fleetMap);
 
-// Custom marker colours
 function getMarkerColor(status) {
   if (status === "active") return "#00e676";
   if (status === "charging") return "#00d4ff";
@@ -162,17 +156,10 @@ function createVehicleMarker(vehicle) {
   const color = getMarkerColor(vehicle.status);
   const icon = L.divIcon({
     className: "",
-    html: `<div style="
-      background:${color};
-      width:12px;height:12px;
-      border-radius:50%;
-      border:2px solid #0a0e1a;
-      box-shadow:0 0 6px ${color};
-    "></div>`,
+    html: `<div style="background:${color};width:12px;height:12px;border-radius:50%;border:2px solid #0a0e1a;box-shadow:0 0 6px ${color};"></div>`,
     iconSize: [12, 12],
     iconAnchor: [6, 6],
   });
-
   return L.marker([vehicle.lat, vehicle.lon], { icon }).addTo(fleetMap)
     .bindPopup(`
       <div style="font-family:Segoe UI;min-width:140px">
@@ -185,7 +172,6 @@ function createVehicleMarker(vehicle) {
     `);
 }
 
-// Plot all vehicles on map
 fleetData.forEach(createVehicleMarker);
 
 // ── VEHICLE LIST ──
@@ -198,12 +184,10 @@ function getBatteryColor(battery) {
 function renderVehicleList() {
   const list = document.getElementById("vehicleList");
   list.innerHTML = "";
-
   fleetData.forEach((v) => {
     const color = getBatteryColor(v.battery);
     const statusClass = `status-${v.status}`;
     const statusLabel = v.status.charAt(0).toUpperCase() + v.status.slice(1);
-
     list.innerHTML += `
       <div class="vehicle-item">
         <div class="vehicle-header">
@@ -231,7 +215,6 @@ function renderAlerts() {
   );
   const list = document.getElementById("alertsList");
   list.innerHTML = "";
-
   alertVehicles.forEach((v) => {
     const isCritical = v.battery < 20;
     list.innerHTML += `

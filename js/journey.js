@@ -1,8 +1,3 @@
-// ── CONFIGURATION ──
-const ORS_KEY =
-  "eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6IjRhYzBmODQxOWYxNDQ5YWU5OWQxNTAzOTdlYmZkN2NlIiwiaCI6Im11cm11cjY0In0=";
-const OCM_KEY = "751ad13b-3ed7-448e-9a4e-143a1126ae5b";
-
 // ── EV SPECIFICATIONS ──
 const EV_RANGE_KM = 250;
 const EV_CONSUMPTION_KWH_PER_KM = 0.2;
@@ -19,7 +14,6 @@ function initJourneyMap() {
   }).addTo(journeyMap);
 }
 
-// Initialise journey map when tab is clicked
 document.querySelectorAll(".tab-btn").forEach((btn) => {
   btn.addEventListener("click", function () {
     if (this.dataset.tab === "journey") {
@@ -31,10 +25,9 @@ document.querySelectorAll(".tab-btn").forEach((btn) => {
   });
 });
 
-// ── GEOCODE CITY TO COORDINATES ──
+// ── GEOCODE CITY — via proxy ──
 async function geocodeCity(city) {
-  const url = `https://api.openrouteservice.org/geocode/search?api_key=${ORS_KEY}&text=${encodeURIComponent(city)}&size=1`;
-  const response = await fetch(url);
+  const response = await fetch(`/api/geocode?city=${encodeURIComponent(city)}`);
   const data = await response.json();
   if (!data.features || data.features.length === 0) {
     throw new Error(`City not found: ${city}`);
@@ -43,25 +36,25 @@ async function geocodeCity(city) {
   return { lat, lon, name: data.features[0].properties.label };
 }
 
-// ── GET ROUTE FROM ORS ──
+// ── GET ROUTE — via proxy ──
 async function getRoute(fromCoords, toCoords) {
-  const url = `https://api.openrouteservice.org/v2/directions/driving-car?api_key=${ORS_KEY}&start=${fromCoords.lon},${fromCoords.lat}&end=${toCoords.lon},${toCoords.lat}`;
+  const url = `/api/route?fromLon=${fromCoords.lon}&fromLat=${fromCoords.lat}&toLon=${toCoords.lon}&toLat=${toCoords.lat}`;
   const response = await fetch(url);
   const data = await response.json();
   return data;
 }
 
-// ── GET CHARGING STATIONS ──
-async function getChargingStations(lat, lon, radius = 50000) {
-  const url = `https://api.openchargemap.io/v3/poi/?output=json&latitude=${lat}&longitude=${lon}&distance=50&distanceunit=KM&maxresults=5&key=${OCM_KEY}`;
+// ── GET CHARGING STATIONS — via proxy ──
+async function getChargingStations(lat, lon) {
+  const url = `/api/charging?lat=${lat}&lon=${lon}`;
   const response = await fetch(url);
   const data = await response.json();
   return data;
 }
 
-// ── GET WEATHER FOR ROUTE ──
+// ── GET WEATHER — via proxy ──
 async function getRouteWeather(lat, lon) {
-  const url = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${OWM_KEY}&units=metric`;
+  const url = `/api/weather?lat=${lat}&lon=${lon}`;
   const response = await fetch(url);
   const data = await response.json();
   return data;
@@ -72,13 +65,10 @@ function calculateAdjustedRange(baseRange, weatherData) {
   const temp = weatherData.main.temp;
   const windSpeed = weatherData.wind.speed;
   let adjustment = 1.0;
-
   if (temp < 5) adjustment -= 0.25;
   else if (temp < 15) adjustment -= 0.1;
   else if (temp > 35) adjustment -= 0.08;
-
   if (windSpeed > 10) adjustment -= 0.05;
-
   return Math.round(baseRange * adjustment);
 }
 
