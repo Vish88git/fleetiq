@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FleetIQ — Intelligent EV Fleet Management</title>
+    <link rel="stylesheet" href="css/style.css" />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    />
+  </head>
+  <body>
+    <!-- TOP NAV -->
+    <nav class="navbar">
+      <div class="nav-brand">
+        <span class="brand-icon">⚡</span>
+        <span class="brand-name">FleetIQ</span>
+        <span class="brand-tag">EV Fleet Intelligence</span>
+      </div>
+      <div class="nav-tabs">
+        <button class="tab-btn active" data-tab="fleet">Fleet Dashboard</button>
+        <button class="tab-btn" data-tab="journey">Journey Planner</button>
+        <button class="tab-btn" data-tab="ai">AI Assistant</button>
+      </div>
+      <div class="nav-status">
+        <span class="status-dot"></span>
+        <span>Live</span>
+      </div>
+    </nav>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+      <!-- TAB 1: FLEET DASHBOARD -->
+      <div class="tab-panel active" id="tab-fleet">
+        <!-- KPI CARDS -->
+        <div class="kpi-row">
+          <div class="kpi-card">
+            <div class="kpi-value" id="totalVehicles">24</div>
+            <div class="kpi-label">Total Vehicles</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-value active-val" id="activeVehicles">18</div>
+            <div class="kpi-label">En Route</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-value charging-val" id="chargingVehicles">4</div>
+            <div class="kpi-label">Charging</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-value alert-val" id="alertVehicles">2</div>
+            <div class="kpi-label">Alerts</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-value" id="avgBattery">67%</div>
+            <div class="kpi-label">Avg Battery</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-value" id="monthlyCost">€2,840</div>
+            <div class="kpi-label">Monthly Energy Cost</div>
+          </div>
+        </div>
+
+        <!-- FLEET MAP + VEHICLE LIST -->
+        <div class="dashboard-grid">
+          <!-- MAP -->
+          <div class="card map-card">
+            <div class="card-header">
+              <h3>Live Fleet Map</h3>
+              <span class="card-badge">Bangalore Region</span>
+            </div>
+            <div id="fleetMap"></div>
+          </div>
+
+          <!-- VEHICLE LIST -->
+          <div class="card">
+            <div class="card-header">
+              <h3>Vehicle Status</h3>
+              <button class="refresh-btn" id="refreshFleet">↻ Refresh</button>
+            </div>
+            <div class="vehicle-list" id="vehicleList">
+              <!-- populated by fleet.js -->
+            </div>
+          </div>
+        </div>
+
+        <!-- ALERTS -->
+        <div class="card alerts-card">
+          <div class="card-header">
+            <h3>⚠️ Active Alerts</h3>
+          </div>
+          <div class="alerts-list" id="alertsList">
+            <!-- populated by fleet.js -->
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 2: JOURNEY PLANNER -->
+      <div class="tab-panel" id="tab-journey">
+        <div class="journey-controls card">
+          <h3>Plan EV Journey</h3>
+          <div class="journey-inputs">
+            <div class="input-group">
+              <label>From</label>
+              <input type="text" id="fromCity" placeholder="e.g. Bangalore" />
+            </div>
+            <div class="input-group">
+              <label>To</label>
+              <input type="text" id="toCity" placeholder="e.g. Mumbai" />
+            </div>
+            <div class="input-group">
+              <label>Vehicle</label>
+              <select id="vehicleSelect">
+                <option>EV-01 — 84%</option>
+                <option>EV-02 — 45%</option>
+                <option>EV-03 — 23%</option>
+                <option>EV-04 — 91%</option>
+              </select>
+            </div>
+            <div class="input-group">
+              <label>Battery %</label>
+              <input
+                type="number"
+                id="batteryLevel"
+                value="84"
+                min="1"
+                max="100"
+              />
+            </div>
+            <button class="plan-btn" id="planJourney">⚡ Plan Journey</button>
+          </div>
+        </div>
+
+        <div class="journey-grid">
+          <div class="card map-card">
+            <div class="card-header">
+              <h3>Route Map</h3>
+            </div>
+            <div id="journeyMap"></div>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <h3>AI Drive Plan</h3>
+            </div>
+            <div class="ai-plan" id="journeyPlan">
+              <p class="placeholder-text">
+                Enter origin and destination to generate an AI-powered drive
+                plan.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 3: AI ASSISTANT -->
+      <div class="tab-panel" id="tab-ai">
+        <div class="ai-assistant card">
+          <h3>🤖 FleetIQ AI Assistant</h3>
+          <p class="ai-subtitle">
+            Ask anything about your fleet, routes, or EV operations.
+          </p>
+          <div class="ai-suggestions">
+            <button class="suggestion-btn">
+              Which vehicle needs charging soonest?
+            </button>
+            <button class="suggestion-btn">
+              What's our energy cost this week?
+            </button>
+            <button class="suggestion-btn">
+              Which driver is most efficient?
+            </button>
+            <button class="suggestion-btn">
+              Plan optimal routes for tomorrow
+            </button>
+          </div>
+          <div class="ai-chat" id="aiChat">
+            <div class="ai-message">
+              <span class="ai-avatar">⚡</span>
+              <div class="ai-bubble">
+                Hello! I'm your FleetIQ AI assistant. Ask me anything about your
+                EV fleet operations.
+              </div>
+            </div>
+          </div>
+          <div class="ai-input-row">
+            <input
+              type="text"
+              id="aiInput"
+              placeholder="Ask about your fleet..."
+            />
+            <button id="aiSend">Send</button>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="js/fleet.js"></script>
+    <script src="js/journey.js"></script>
+    <script src="js/ai.js"></script>
+  </body>
+</html>
